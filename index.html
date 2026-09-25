@@ -260,6 +260,14 @@
   }
   @media (prefers-reduced-motion: reduce) { .service-card { transition: none; } }
 </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6N82MS4MH8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6N82MS4MH8');
+</script>
 </head>
 <body>
 
@@ -532,18 +540,20 @@
         </div>
       </div>
       <div>
-        <form class="contact-form" onsubmit="handleSubmit(event)">
+        <form class="contact-form" action="https://formspree.io/f/xoevnpva" method="POST" onsubmit="handleSubmit(event)">
+          <input type="hidden" name="_subject" value="New website inquiry – Thrive Educational Consulting">
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
           <div class="form-field">
             <label for="name">Your name</label>
-            <input type="text" id="name" placeholder="Jane Smith" required>
+            <input type="text" id="name" name="name" placeholder="Jane Smith" required>
           </div>
           <div class="form-field">
             <label for="email">Email address</label>
-            <input type="email" id="email" placeholder="jane@example.com" required>
+            <input type="email" id="email" name="email" placeholder="jane@example.com" required>
           </div>
           <div class="form-field">
             <label for="inquiry">I am a...</label>
-            <select id="inquiry">
+            <select id="inquiry" name="I am a">
               <option value="">Select one</option>
               <option>Student</option>
               <option>Parent / Guardian</option>
@@ -552,9 +562,10 @@
           </div>
           <div class="form-field">
             <label for="message">Message</label>
-            <textarea id="message" placeholder="Tell me what you are looking for..."></textarea>
+            <textarea id="message" name="message" required placeholder="Tell me what you are looking for..."></textarea>
           </div>
           <button type="submit" class="form-submit">Send message</button>
+          <p class="form-status" role="status" aria-live="polite" style="margin:0;font-size:0.95rem;"></p>
         </form>
       </div>
     </div>
@@ -577,12 +588,31 @@
 </footer>
 
 <script>
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const btn = e.target.querySelector('.form-submit');
-    btn.textContent = 'Message sent ✓';
-    btn.style.background = '#4A7A43';
+    const form = e.target;
+    const btn = form.querySelector('.form-submit');
+    const status = form.querySelector('.form-status');
     btn.disabled = true;
+    btn.textContent = 'Sending…';
+    status.textContent = '';
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error('Send failed');
+      btn.textContent = 'Message sent ✓';
+      btn.style.background = '#4A7A43';
+      status.textContent = 'Thank you. Your message is on its way to me.';
+      form.reset();
+      if (typeof gtag === 'function') gtag('event', 'generate_lead', { form: 'contact' });
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Send message';
+      status.innerHTML = 'Your message did not send. Please email me at <a href="mailto:erica@thriveeducationalconsulting.com">erica@thriveeducationalconsulting.com</a> or call 404-909-3341.';
+    }
   }
   // Testimonial carousel
   (function() {
